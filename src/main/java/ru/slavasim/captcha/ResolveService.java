@@ -13,7 +13,14 @@ import java.util.stream.Collectors;
 
 @Service
 public class ResolveService {
-    public List<Point> resolveCaptcha(String imageDataUrl, List<Rectangle> shapes, int count) {
+    public List<Point> resolveCaptchaPoints(String imageDataUrl, List<Rectangle> shapes, int count) {
+        List<Integer> nums = resolveCaptchaNums(imageDataUrl, shapes, count);
+        return nums.stream()
+                .map(i -> new Point((int) shapes.get(i).getCenterX(), (int) shapes.get(i).getCenterY()))
+                .collect(Collectors.toList());
+    }
+
+    public List<Integer> resolveCaptchaNums(String imageDataUrl, List<Rectangle> shapes, int count) {
         try {
             BufferedImage src = ImageUtils.imageFromDataUrl(imageDataUrl);
             BufferedImage image = new ImageBuilder(src).toBlackWhite().getImage();
@@ -21,12 +28,11 @@ public class ResolveService {
             List<BufferedImage> candidates = shapes.stream()
                     .map(s -> ImageUtils.imageFromShape(image, s))
                     .collect(Collectors.toList());
-            List<Point> points = new ArrayList<>();
+            List<Integer> nums = new ArrayList<>();
             for (int i = 0; i < count; i++) {
-                Rectangle rect = shapes.get(ImageUtils.bestMatch(letters.get(i), candidates));
-                points.add(new Point((int) rect.getCenterX(), (int) rect.getCenterY()));
+                nums.add(ImageUtils.bestMatch(letters.get(i), candidates));
             }
-            return points;
+            return nums;
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -20,10 +20,10 @@ public class ResolveController {
     private ResolveService resolveService;
 
     @PostMapping
-    public List<Point> resolve(@RequestBody ResolveRequest resolveRequest) {
+    public List<Integer> resolve(@RequestBody ResolveRequest resolveRequest) {
         List<Rectangle> rectangles = resolveRequest.getShapes().stream()
                 .map(MapArea::asRect)
                 .collect(Collectors.toList());
-        return resolveService.resolveCaptcha(resolveRequest.getDataURL(), rectangles, resolveRequest.getCount());
+        return resolveService.resolveCaptchaNums(resolveRequest.getDataURL(), rectangles, resolveRequest.getCount());
     }
 }
