@@ -1,10 +1,7 @@
 package ru.slavasim.FifaTools;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import ru.slavasim.captcha.ResolveService;
 import ru.slavasim.model.MapArea;
 import ru.slavasim.model.ResolveRequest;
@@ -20,6 +17,7 @@ public class ResolveController {
     private ResolveService resolveService;
 
     @PostMapping
+    @CrossOrigin
     public List<Integer> resolve(@RequestBody ResolveRequest resolveRequest) {
         List<Rectangle> rectangles = resolveRequest.getShapes().stream()
                 .map(MapArea::asRect)
