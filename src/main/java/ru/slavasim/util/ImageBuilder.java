@@ -2,6 +2,7 @@ package ru.slavasim.util;
 
 import ij.ImagePlus;
 import ij.process.ImageConverter;
+import ij.process.ImageProcessor;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -17,7 +18,7 @@ public class ImageBuilder {
 
     public ImageBuilder toBlackWhite() {
         new ImageConverter(image).convertToGray8();
-        image.getProcessor().threshold(128);
+        image.getProcessor().threshold(180);
         return this;
     }
 
@@ -27,6 +28,8 @@ public class ImageBuilder {
     }
 
     public BufferedImage getImage() {
+        if (image.getWidth() == 0)
+            return null;
         return image.getBufferedImage();
     }
 
@@ -82,5 +85,65 @@ public class ImageBuilder {
     public ImageBuilder resize(int width, int height) {
         image = new ImagePlus("image", image.getProcessor().resize(width, height).getBufferedImage());
         return this;
+    }
+
+    public ImageBuilder letter(int minWidthBlank, int maxWidthNoBlank, int maxWidthBlank) {
+        int blankWidth = 0;
+        int[] column = findBlankColumn(10, minWidthBlank, Math.min(maxWidthBlank, image.getWidth()));
+        if (column[0] > 0) {
+            return crop(new Rectangle(0, 0, column[0], image.getHeight()), 0);
+        }
+        return crop(new Rectangle(0, 0, Math.min(maxWidthNoBlank, image.getWidth()), image.getHeight()), 0);
+    }
+
+    private int[] findBlankColumn(int start, int minWidth, int width) {
+        int[] result = {-1, 0};
+        int blankStart = -1;
+        int blankWidth = 0;
+        for (int x = start; x < width; x++) {
+            boolean blank = true;
+            for (int y = 0; y < image.getHeight(); y++) {
+                if (image.getPixel(x, y)[0] == 0) {
+                    blank = false;
+                    break;
+                }
+            }
+            if (blank) {
+                blankWidth++;
+                if (blankStart < 0)
+                    blankStart = x;
+            } else {
+                if (blankWidth >= minWidth) {
+                    break;
+                }
+                blankStart = -1;
+                blankWidth = 0;
+            }
+        }
+        if (blankWidth >= minWidth) {
+            result[0] = blankStart;
+            result[1] = blankWidth;
+        }
+        return result;
+    }
+
+    public ImageBuilder squeeze(int minBlankWidth) {
+        int pos = 0;
+        int width = image.getWidth();
+        ImageProcessor processor = image.getProcessor();
+        while (pos < width) {
+            int[] column = findBlankColumn(pos, minBlankWidth + 1, width);
+            if (column[1] == 0)
+                break;
+            pos = column[0] + minBlankWidth;
+            int shrinkSize = column[1] - minBlankWidth;
+            width -= shrinkSize;
+            for (int y = 0; y < image.getHeight(); y++) {
+                for (int x = pos; x < width; x++) {
+                    processor.set(x, y, processor.get(x + shrinkSize, y));
+                }
+            }
+        }
+        return crop(new Rectangle(0, 0, width, image.getHeight()), 0);
     }
 }

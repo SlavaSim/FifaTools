@@ -21,8 +21,8 @@ import java.util.List;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = {FifaToolsApplication.class}, webEnvironment = WebEnvironment.DEFINED_PORT)
-public class FifaToolsApplicationTests {
+@SpringBootTest(classes = {Application.class}, webEnvironment = WebEnvironment.DEFINED_PORT)
+public class ApplicationTests {
     private static final String API_ROOT = "http://localhost:8080/rest/resolve";
 
     @Test

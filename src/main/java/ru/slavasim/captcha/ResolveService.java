@@ -4,8 +4,10 @@ import org.springframework.stereotype.Service;
 import ru.slavasim.util.ImageBuilder;
 import ru.slavasim.util.ImageUtils;
 
+import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +26,12 @@ public class ResolveService {
         try {
             BufferedImage src = ImageUtils.imageFromDataUrl(imageDataUrl);
             BufferedImage image = new ImageBuilder(src).toBlackWhite().getImage();
+            try {
+                ImageIO.write(image, "png", new File("image.png"));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
             List<BufferedImage> letters = ImageUtils.lettersFromImage(image, count);
             List<BufferedImage> candidates = shapes.stream()
                     .map(s -> ImageUtils.imageFromShape(image, s))

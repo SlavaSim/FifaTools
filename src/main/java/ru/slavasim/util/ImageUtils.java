@@ -5,6 +5,7 @@ import javax.xml.bind.DatatypeConverter;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,15 +32,31 @@ public class ImageUtils {
     }
 
     public static List<BufferedImage> lettersFromImage(BufferedImage image, int count) {
-        BufferedImage test = new ImageBuilder(image)
-                .crop(new Rectangle(0, 0, image.getWidth() - 1, 69), 0)
-                .trim(15)
+        BufferedImage captcha = new ImageBuilder(image)
+                .crop(new Rectangle(0, 0, image.getWidth(), 69), 0)
+                .trim()
+                .squeeze(5)
                 .getImage();
-        int w = test.getWidth() / count;
         List<BufferedImage> result = new ArrayList<>();
         for (int i = 0; i < count; i++) {
-            Rectangle shape = new Rectangle(w * i, 0, w, 69);
-            result.add(new ImageBuilder(test).crop(shape, 0).trim().getImage());
+            try {
+                ImageIO.write(captcha, "png", new File("captcha" + (i + 1) + ".png"));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            int avgWidth = captcha.getWidth() / (count - i);
+            BufferedImage letter = new ImageBuilder(captcha).letter(2, avgWidth, (int) (avgWidth * 1.5)).trim().getImage();
+            captcha = new ImageBuilder(captcha)
+                    .crop(new Rectangle(letter.getWidth(), 0, captcha.getWidth() - letter.getWidth(), captcha.getHeight()), 0)
+                    .trim()
+                    .getImage();
+            result.add(letter);
+            try {
+                ImageIO.write(letter, "png", new File("letter" + (i + 1) + ".png"));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         return result;
     }
