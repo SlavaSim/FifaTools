@@ -6,6 +6,7 @@ import java.awt.*;
 
 @Data
 public class MapArea {
+    public String code;
     public int x1;
     public int y1;
     public int x2;
